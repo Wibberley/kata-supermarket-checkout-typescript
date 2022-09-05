@@ -1,4 +1,3 @@
 export class Product {
-    constructor(public readonly name: string) {
-    }
+  constructor(public readonly name: string) {}
 }
