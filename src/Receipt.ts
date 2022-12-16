@@ -12,7 +12,7 @@ export class Receipt {
   }
 }
 
-class LineItem {
+export class LineItem {
   constructor(
     public readonly product: Product,
     public readonly quantity: number,

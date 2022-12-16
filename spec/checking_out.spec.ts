@@ -1,10 +1,23 @@
-import { Checkout, Product, ProductCatalogue } from "../src";
+import { Checkout, LineItem, Product, ProductCatalogue } from '../src';
 
-describe("Checking out articles at the supermarket", () => {
-  const Apples = new Product("Apples"),
-    Bananas = new Product("Lemons"),
-    Coffee = new Product("Coffee"),
-    Rice = new Product("Rice");
+const assertReceiptLineItem = (lineItem: LineItem) => {
+  return (
+    expectedName: string,
+    expectedQuantity: number,
+    expectedTotalPrice: number,
+  ) => {
+    expect(lineItem).not.toBeUndefined();
+    expect(lineItem.product.name).toEqual(expectedName);
+    expect(lineItem.quantity).toEqual(expectedQuantity);
+    expect(lineItem.totalPrice).toEqual(expectedTotalPrice);
+  };
+};
+
+describe('Checking out articles at the supermarket', () => {
+  const Apples = new Product('Apples'),
+    Bananas = new Product('Bananas'),
+    Coffee = new Product('Coffee'),
+    Rice = new Product('Rice');
 
   const catalogue = new ProductCatalogue();
 
@@ -37,18 +50,30 @@ describe("Checking out articles at the supermarket", () => {
         expect(receipt.totalPrice()).toEqual(2.0);
       });
 
-      it(`should show the quantity and a total price per product type`, () => {
+      it(`and a single product type should show the quantity and a total price`, () => {
         const checkout = new Checkout(catalogue);
 
         const receipt = checkout.scan([Apples, Apples]);
 
         const lineItem = receipt.lineItems[0];
 
-        expect(lineItem).not.toBeUndefined();
+        assertReceiptLineItem(lineItem)(Apples.name, 2, 2 * 2.0);
+      });
 
-        expect(lineItem.product.name).toEqual(Apples.name);
-        expect(lineItem.quantity).toEqual(2);
-        expect(lineItem.totalPrice).toEqual(2 * 2.0);
+      it(`and mutiple product types should show the quantity and a total price for each of the product types grouped into lines`, () => {
+        const checkout = new Checkout(catalogue);
+
+        const receipt = checkout.scan([
+          Apples,
+          Bananas,
+          Apples,
+          Coffee,
+          Coffee,
+        ]);
+
+        assertReceiptLineItem(receipt.lineItems[0])(Apples.name, 2, 4);
+        assertReceiptLineItem(receipt.lineItems[1])(Bananas.name, 1, 1.5);
+        assertReceiptLineItem(receipt.lineItems[2])(Coffee.name, 2, 9);
       });
     });
 
